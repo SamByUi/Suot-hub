@@ -1,16 +1,14 @@
--- 放在StarterGui下的LocalScript，第一段
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local camera = workspace.CurrentCamera
 
--- 重力控制
-local gravityActive = false
 local originalGravity = workspace.Gravity
 
-local gui = Instance.new("ScreenGui", player.PlayerGui)
+local gui = Instance.new("ScreenGui")
 gui.Name = "DragUIPanel"
 gui.ResetOnSpawn = false
+gui.Parent = player.PlayerGui
 
 local panel = Instance.new("Frame", gui)
 panel.Size = UDim2.new(0, 350, 0, 260)
@@ -49,6 +47,7 @@ scaleBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 scaleBtn.TextColor3 = Color3.fromRGB(255,255,255)
 scaleBtn.Font = Enum.Font.SourceSansBold
 scaleBtn.TextSize = 20
+
 local minimized = false
 scaleBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -60,8 +59,7 @@ scaleBtn.MouseButton1Click:Connect(function()
     panel.Size = minimized and UDim2.new(0,350,0,40) or UDim2.new(0,350,0,260)
 end)
 
--- 第二段，继续放在同一个LocalScript里
-local function createSlider(y, labelText, min,max,defaultValue,callback)
+local function createSlider(y, labelText, min, max, defaultValue, callback)
     local label = Instance.new("TextLabel", panel)
     label.Size = UDim2.new(0,100,0,28)
     label.Position = UDim2.new(0,15,0,y)
@@ -84,7 +82,7 @@ local function createSlider(y, labelText, min,max,defaultValue,callback)
     sliderBtn.BorderSizePixel = 0
     sliderBtn.ZIndex = 2
 
-    local valueText = Instance.new("TextLabel",panel)
+    local valueText = Instance.new("TextLabel", panel)
     valueText.Size = UDim2.new(0,40,0,28)
     valueText.Position = UDim2.new(0,265,0,y)
     valueText.BackgroundTransparency = 1
@@ -104,31 +102,41 @@ local function createSlider(y, labelText, min,max,defaultValue,callback)
     end
 
     local dragging = false
+    local UserInputService = game:GetService("UserInputService")
+    local lastInput = nil
+
+    local function updateSlider(input)
+        local x = input.Position.X
+        local rel = math.clamp((x - sliderBG.AbsolutePosition.X) / sliderBG.AbsoluteSize.X, 0, 1)
+        setValue(min + rel * (max - min))
+    end
+
     sliderBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
+            lastInput = input
+            panel.Draggable = false
         end
     end)
+
     sliderBtn.InputEnded:Connect(function(input)
-        dragging = false
-    end)
-    sliderBG.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            local x = input.Position.X
-            local rel = math.clamp((x-sliderBG.AbsolutePosition.X)/sliderBG.AbsoluteSize.X, 0, 1)
-            setValue( min + rel*(max-min) )
+        if input == lastInput then
+            dragging = false
+            panel.Draggable = true
         end
     end)
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input == lastInput then
+            dragging = false
+            panel.Draggable = true
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            local x = input.Position.X
-            local rel = math.clamp((x-sliderBG.AbsolutePosition.X)/sliderBG.AbsoluteSize.X,0,1)
-            setValue( min + rel*(max-min) )
+            updateSlider(input)
         end
-    end)
-    sliderBtn.InputEnded:Connect(function(input)
-        dragging = false
     end)
 
     local switchBtn = Instance.new("TextButton", panel)
@@ -178,6 +186,6 @@ end)
 player.CharacterAdded:Connect(function(char)
     local hum = char:WaitForChild("Humanoid")
     humanoid = hum
-    speedSetter( humanoid.WalkSpeed )
-    jpSetter( humanoid.JumpPower )
+    speedSetter(humanoid.WalkSpeed)
+    jpSetter(humanoid.JumpPower)
 end)

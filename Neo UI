@@ -1,4 +1,3 @@
--- NEO高级UI全部源码 - 第一段（基础结构和主题定义）
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -119,14 +118,8 @@ local function applyTheme()
     end
 end
 
--- 第一段结束，请回复“下一段”继续
-
--- NEO高级UI全部源码 - 第二段（功能区内容与主要控件）
---（粘贴在第一段之后）
-
 local panel = {}
 
--- 脚本注入区
 panel.inject = Instance.new("Frame", contentFrame)
 panel.inject.Size = UDim2.new(1,0,1,0)
 panel.inject.BackgroundTransparency = 1
@@ -165,7 +158,6 @@ runBtn.Font = Enum.Font.GothamBold
 runBtn.TextSize = 19
 Instance.new("UICorner", runBtn).CornerRadius = UDim.new(0, 7)
 
--- 脚本仓库区（可自定义添加更多）
 panel.repo = Instance.new("Frame", contentFrame)
 panel.repo.Size = UDim2.new(1,0,1,0)
 panel.repo.BackgroundTransparency = 1
@@ -179,7 +171,6 @@ repoTitle.Font = Enum.Font.GothamSemibold
 repoTitle.TextSize = 18
 repoTitle.TextColor3 = theme[currentTheme].content
 
--- 示例仓库按钮1
 local repoBtn1 = Instance.new("TextButton", panel.repo)
 repoBtn1.Size = UDim2.new(1,-40,0,38)
 repoBtn1.Position = UDim2.new(0,20,0,50)
@@ -190,7 +181,6 @@ repoBtn1.TextSize = 17
 repoBtn1.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", repoBtn1).CornerRadius = UDim.new(0,10)
 
--- 示例仓库按钮2
 local repoBtn2 = Instance.new("TextButton", panel.repo)
 repoBtn2.Size = UDim2.new(1,-40,0,38)
 repoBtn2.Position = UDim2.new(0,20,0,98)
@@ -201,7 +191,6 @@ repoBtn2.TextSize = 17
 repoBtn2.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", repoBtn2).CornerRadius = UDim.new(0,10)
 
--- 内置工具区
 panel.tools = Instance.new("Frame", contentFrame)
 panel.tools.Size = UDim2.new(1,0,1,0)
 panel.tools.BackgroundTransparency = 1
@@ -215,7 +204,6 @@ toolsTitle.Font = Enum.Font.GothamSemibold
 toolsTitle.TextSize = 18
 toolsTitle.TextColor3 = theme[currentTheme].content
 
--- 飞行按钮
 local flyBtn = Instance.new("TextButton", panel.tools)
 flyBtn.Size = UDim2.new(0, 120, 0, 36)
 flyBtn.Position = UDim2.new(0, 26, 0, 44)
@@ -226,7 +214,6 @@ flyBtn.Font = Enum.Font.GothamBold
 flyBtn.TextSize = 17
 Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 9)
 
--- 无敌按钮
 local godBtn = Instance.new("TextButton", panel.tools)
 godBtn.Size = UDim2.new(0, 120, 0, 36)
 godBtn.Position = UDim2.new(0, 170, 0, 44)
@@ -237,7 +224,6 @@ godBtn.Font = Enum.Font.GothamBold
 godBtn.TextSize = 17
 Instance.new("UICorner", godBtn).CornerRadius = UDim.new(0, 9)
 
--- UI设置区
 panel.settings = Instance.new("Frame", contentFrame)
 panel.settings.Size = UDim2.new(1,0,1,0)
 panel.settings.BackgroundTransparency = 1
@@ -262,16 +248,10 @@ transBox.TextColor3 = Color3.new(0,0,0)
 transBox.TextSize = 16
 Instance.new("UICorner", transBox).CornerRadius = UDim.new(0,12)
 
--- 第二段完毕，请回复“下一段”继续
-
--- NEO高级UI全部源码 - 第三段（功能实现与事件绑定）
---（粘贴在上一段之后）
-
--- 侧边栏面板切换逻辑
 for name, frame in pairs(panel) do
     frame.Visible = false
 end
-panel.inject.Visible = true -- 默认
+panel.inject.Visible = true
 
 local btnMap = {
     [b_inject] = panel.inject,
@@ -287,13 +267,11 @@ for btn, frame in pairs(btnMap) do
     end)
 end
 
--- 主题切换逻辑
 themeBtn.MouseButton1Click:Connect(function()
     currentTheme = (currentTheme=="dark" and "light") or "dark"
     applyTheme()
 end)
 
--- 透明度调整框
 transBox.FocusLost:Connect(function()
     local t = tonumber(transBox.Text:match("%d+"))
     if t and t>=0 and t<=90 then
@@ -302,7 +280,6 @@ transBox.FocusLost:Connect(function()
     end
 end)
 
--- 脚本注入按钮逻辑
 runBtn.MouseButton1Click:Connect(function()
     local str = codeBox.Text
     if str and #str > 0 then
@@ -318,16 +295,13 @@ runBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 仓库注入脚本1演示：让自己角色自动Say "HI"
 repoBtn1.MouseButton1Click:Connect(function()
     local char = player.Character or player.CharacterAdded:Wait()
     if char:FindFirstChildOfClass("Humanoid") then
-        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents")
-        :WaitForChild("SayMessageRequest"):FireServer("HI!（来自仓库脚本1）", "All")
+        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer("HI!（来自仓库脚本1）", "All")
     end
 end)
 
--- 仓库注入脚本2演示：让所有玩家跳一下
 repoBtn2.MouseButton1Click:Connect(function()
     for _,plr in pairs(Players:GetPlayers()) do
         if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
@@ -336,7 +310,6 @@ repoBtn2.MouseButton1Click:Connect(function()
     end
 end)
 
--- 内置工具：飞行和无敌
 local flyState, bpObj
 flyBtn.MouseButton1Click:Connect(function()
     local him = player.Character or player.CharacterAdded:Wait()
@@ -366,12 +339,6 @@ godBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 第三段结束，请回复“最后一段”！
-
--- NEO高级UI全部源码 - 第四段（杂项收尾与初始化优化）
---（粘贴在前面内容最后）
-
--- 面板激活/隐藏（按Insert或自定义键）
 local userInput = game:GetService("UserInputService")
 local shown = true
 userInput.InputBegan:Connect(function(input,gpe)
@@ -382,7 +349,6 @@ userInput.InputBegan:Connect(function(input,gpe)
     end
 end)
 
--- 拖动优化
 local dragToggle = false
 local dragInput, dragStart, startPos
 
@@ -410,16 +376,10 @@ userInput.InputChanged:Connect(function(input)
     end
 end)
 
--- 默认界面刷新主题
 applyTheme()
 
--- 确保仅显示第一个页面
 for k,frame in pairs(panel) do
     if k ~= "inject" then
         frame.Visible = false
     end
 end
-
--- 游戏再次重进保留UI（ResetOnSpawn=false）
-
--- 全部代码结束！

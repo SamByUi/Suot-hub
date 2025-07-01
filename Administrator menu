@@ -1,4 +1,4 @@
--- Roblox 脚本执行&存储UI（基础UI与主要区域）
+-- Roblox 动态脚本执行器UI 基础布局
 local player = game.Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
@@ -14,7 +14,6 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
--- 关闭按钮
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0,40,0,30)
 CloseBtn.Position = UDim2.new(1,-45,0,5)
@@ -23,7 +22,6 @@ CloseBtn.BackgroundColor3 = Color3.fromRGB(200,80,80)
 CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
 CloseBtn.Parent = MainFrame
 
--- 最小化按钮
 local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0,40,0,30)
 MinBtn.Position = UDim2.new(1,-90,0,5)
@@ -32,7 +30,6 @@ MinBtn.BackgroundColor3 = Color3.fromRGB(80,170,200)
 MinBtn.TextColor3 = Color3.fromRGB(255,255,255)
 MinBtn.Parent = MainFrame
 
--- 标题
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1,-140,0,30)
 TitleLabel.Position = UDim2.new(0,10,0,5)
@@ -44,7 +41,6 @@ TitleLabel.TextSize = 20
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = MainFrame
 
--- 执行区
 local ExecLabel = Instance.new("TextLabel")
 ExecLabel.Size = UDim2.new(0,230,0,30)
 ExecLabel.Position = UDim2.new(0,10,0,45)
@@ -81,7 +77,6 @@ ExecBtn.Font = Enum.Font.SourceSansBold
 ExecBtn.TextSize = 20
 ExecBtn.Parent = MainFrame
 
--- 储存区
 local SaveLabel = Instance.new("TextLabel")
 SaveLabel.Size = UDim2.new(0,225,0,30)
 SaveLabel.Position = UDim2.new(0,265,0,45)
@@ -101,7 +96,6 @@ ScriptsList.CanvasSize = UDim2.new(0,0,0,500)
 ScriptsList.ScrollBarThickness = 8
 ScriptsList.Parent = MainFrame
 
--- 示例储存脚本
 local sampleBtn = Instance.new("TextButton")
 sampleBtn.Size = UDim2.new(1,-10,0,35)
 sampleBtn.Position = UDim2.new(0,5,0,5)
@@ -116,7 +110,7 @@ sampleBtn.MouseButton1Click:Connect(function()
     ScriptBox.Text = "-- 这是保存的脚本示例"
 end)
 
--- 右下角缩放按钮与功能
+-- 缩放、最小化、关闭、脚本动态执行逻辑
 local ResizeBtn = Instance.new("Frame")
 ResizeBtn.Size = UDim2.new(0,30,0,30)
 ResizeBtn.Position = UDim2.new(1,-30,1,-30)
@@ -149,7 +143,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- 最小化与恢复
 local minimized = false
 local originalSize = MainFrame.Size
 local originalPosition = MainFrame.Position
@@ -186,13 +179,20 @@ MinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 关闭功能
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- 脚本执行（演示用途，真实执行需谨慎）
+-- 脚本真正运行（仅限Studio，正式服不可用）
 ExecBtn.MouseButton1Click:Connect(function()
-    print("执行的脚本内容为：\n" .. ScriptBox.Text)
-    -- 这里可以接入你的脚本执行逻辑
+    local src = ScriptBox.Text
+    local func, err = loadstring(src)
+    if func then
+        local success, msg = pcall(func)
+        if not success then
+            warn("脚本运行出错: " .. tostring(msg))
+        end
+    else
+        warn("脚本语法错误: " .. tostring(err))
+    end
 end)

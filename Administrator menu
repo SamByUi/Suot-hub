@@ -1,0 +1,198 @@
+-- Roblox 脚本执行&存储UI（基础UI与主要区域）
+local player = game.Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 500, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- 关闭按钮
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0,40,0,30)
+CloseBtn.Position = UDim2.new(1,-45,0,5)
+CloseBtn.Text = "X"
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200,80,80)
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.Parent = MainFrame
+
+-- 最小化按钮
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0,40,0,30)
+MinBtn.Position = UDim2.new(1,-90,0,5)
+MinBtn.Text = "-"
+MinBtn.BackgroundColor3 = Color3.fromRGB(80,170,200)
+MinBtn.TextColor3 = Color3.fromRGB(255,255,255)
+MinBtn.Parent = MainFrame
+
+-- 标题
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1,-140,0,30)
+TitleLabel.Position = UDim2.new(0,10,0,5)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "脚本执行和脚本储存"
+TitleLabel.TextColor3 = Color3.fromRGB(220,220,220)
+TitleLabel.Font = Enum.Font.SourceSansSemibold
+TitleLabel.TextSize = 20
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = MainFrame
+
+-- 执行区
+local ExecLabel = Instance.new("TextLabel")
+ExecLabel.Size = UDim2.new(0,230,0,30)
+ExecLabel.Position = UDim2.new(0,10,0,45)
+ExecLabel.Text = "执行脚本"
+ExecLabel.BackgroundTransparency = 1
+ExecLabel.TextColor3 = Color3.fromRGB(255,255,255)
+ExecLabel.TextXAlignment = Enum.TextXAlignment.Left
+ExecLabel.Font = Enum.Font.SourceSans
+ExecLabel.TextSize = 20
+ExecLabel.Parent = MainFrame
+
+local ScriptBox = Instance.new("TextBox")
+ScriptBox.Size = UDim2.new(0,230,0,180)
+ScriptBox.Position = UDim2.new(0,10,0,80)
+ScriptBox.Text = "-- 在这里输入脚本代码"
+ScriptBox.TextWrapped = true
+ScriptBox.TextXAlignment = Enum.TextXAlignment.Left
+ScriptBox.TextYAlignment = Enum.TextYAlignment.Top
+ScriptBox.MultiLine = true
+ScriptBox.BackgroundColor3 = Color3.fromRGB(55,55,55)
+ScriptBox.TextColor3 = Color3.fromRGB(255,255,255)
+ScriptBox.Font = Enum.Font.Code
+ScriptBox.TextSize = 15
+ScriptBox.ClearTextOnFocus = false
+ScriptBox.Parent = MainFrame
+
+local ExecBtn = Instance.new("TextButton")
+ExecBtn.Size = UDim2.new(0,220,0,35)
+ExecBtn.Position = UDim2.new(0,15,1,-45)
+ExecBtn.Text = "执行"
+ExecBtn.BackgroundColor3 = Color3.fromRGB(33,150,243)
+ExecBtn.TextColor3 = Color3.fromRGB(255,255,255)
+ExecBtn.Font = Enum.Font.SourceSansBold
+ExecBtn.TextSize = 20
+ExecBtn.Parent = MainFrame
+
+-- 储存区
+local SaveLabel = Instance.new("TextLabel")
+SaveLabel.Size = UDim2.new(0,225,0,30)
+SaveLabel.Position = UDim2.new(0,265,0,45)
+SaveLabel.Text = "已保存脚本"
+SaveLabel.BackgroundTransparency = 1
+SaveLabel.TextColor3 = Color3.fromRGB(255,255,255)
+SaveLabel.TextXAlignment = Enum.TextXAlignment.Left
+SaveLabel.Font = Enum.Font.SourceSans
+SaveLabel.TextSize = 20
+SaveLabel.Parent = MainFrame
+
+local ScriptsList = Instance.new("ScrollingFrame")
+ScriptsList.Size = UDim2.new(0,225,0,180)
+ScriptsList.Position = UDim2.new(0,265,0,80)
+ScriptsList.BackgroundColor3 = Color3.fromRGB(55,55,55)
+ScriptsList.CanvasSize = UDim2.new(0,0,0,500)
+ScriptsList.ScrollBarThickness = 8
+ScriptsList.Parent = MainFrame
+
+-- 示例储存脚本
+local sampleBtn = Instance.new("TextButton")
+sampleBtn.Size = UDim2.new(1,-10,0,35)
+sampleBtn.Position = UDim2.new(0,5,0,5)
+sampleBtn.Text = "示例脚本"
+sampleBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+sampleBtn.TextColor3 = Color3.fromRGB(220,220,220)
+sampleBtn.Font = Enum.Font.SourceSans
+sampleBtn.TextSize = 18
+sampleBtn.Parent = ScriptsList
+
+sampleBtn.MouseButton1Click:Connect(function()
+    ScriptBox.Text = "-- 这是保存的脚本示例"
+end)
+
+-- 右下角缩放按钮与功能
+local ResizeBtn = Instance.new("Frame")
+ResizeBtn.Size = UDim2.new(0,30,0,30)
+ResizeBtn.Position = UDim2.new(1,-30,1,-30)
+ResizeBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+ResizeBtn.Parent = MainFrame
+
+local UserInputService = game:GetService("UserInputService")
+local resizing = false
+local resizeStartPos = nil
+local frameStartSize = nil
+
+ResizeBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = true
+        resizeStartPos = input.Position
+        frameStartSize = MainFrame.Size
+    end
+end)
+
+ResizeBtn.InputEnded:Connect(function(input)
+    resizing = false
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - resizeStartPos
+        local newX = math.clamp(frameStartSize.X.Offset + delta.X, 300, 900)
+        local newY = math.clamp(frameStartSize.Y.Offset + delta.Y, 150, 600)
+        MainFrame.Size = UDim2.new(0, newX, 0, newY)
+    end
+end)
+
+-- 最小化与恢复
+local minimized = false
+local originalSize = MainFrame.Size
+local originalPosition = MainFrame.Position
+
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        originalSize = MainFrame.Size
+        originalPosition = MainFrame.Position
+        MainFrame.Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 40)
+        TitleLabel.Visible = true
+        CloseBtn.Visible = true
+        MinBtn.Visible = true
+        ResizeBtn.Visible = false
+        ExecLabel.Visible = false
+        ScriptBox.Visible = false
+        ExecBtn.Visible = false
+        SaveLabel.Visible = false
+        ScriptsList.Visible = false
+        MinBtn.Text = "+"
+    else
+        MainFrame.Size = originalSize
+        MainFrame.Position = originalPosition
+        TitleLabel.Visible = true
+        CloseBtn.Visible = true
+        MinBtn.Visible = true
+        ResizeBtn.Visible = true
+        ExecLabel.Visible = true
+        ScriptBox.Visible = true
+        ExecBtn.Visible = true
+        SaveLabel.Visible = true
+        ScriptsList.Visible = true
+        MinBtn.Text = "-"
+    end
+end)
+
+-- 关闭功能
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- 脚本执行（演示用途，真实执行需谨慎）
+ExecBtn.MouseButton1Click:Connect(function()
+    print("执行的脚本内容为：\n" .. ScriptBox.Text)
+    -- 这里可以接入你的脚本执行逻辑
+end)

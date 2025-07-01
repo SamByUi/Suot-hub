@@ -1,0 +1,183 @@
+-- 放在StarterGui下的LocalScript，第一段
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local camera = workspace.CurrentCamera
+
+-- 重力控制
+local gravityActive = false
+local originalGravity = workspace.Gravity
+
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "DragUIPanel"
+gui.ResetOnSpawn = false
+
+local panel = Instance.new("Frame", gui)
+panel.Size = UDim2.new(0, 350, 0, 260)
+panel.Position = UDim2.new(0.3, 0, 0.2, 0)
+panel.BackgroundColor3 = Color3.fromRGB(30, 30, 33)
+panel.Active = true
+panel.Draggable = true
+panel.Name = "MainPanel"
+panel.BorderSizePixel = 0
+
+local title = Instance.new("TextLabel", panel)
+title.Size = UDim2.new(1, 0, 0, 36)
+title.BackgroundTransparency = 1
+title.Text = "玩家属性调节面板"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 22
+
+local closeBtn = Instance.new("TextButton", panel)
+closeBtn.Size = UDim2.new(0, 40, 0, 30)
+closeBtn.Position = UDim2.new(1, -45, 0, 3)
+closeBtn.Text = "X"
+closeBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 20
+closeBtn.MouseButton1Click:Connect(function()
+    gui.Enabled = false
+end)
+
+local scaleBtn = Instance.new("TextButton", panel)
+scaleBtn.Size = UDim2.new(0, 40, 0, 30)
+scaleBtn.Position = UDim2.new(1, -90, 0, 3)
+scaleBtn.Text = "_"
+scaleBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+scaleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+scaleBtn.Font = Enum.Font.SourceSansBold
+scaleBtn.TextSize = 20
+local minimized = false
+scaleBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _,obj in ipairs(panel:GetChildren()) do
+        if obj ~= title and obj ~= closeBtn and obj ~= scaleBtn then
+            obj.Visible = not minimized
+        end
+    end
+    panel.Size = minimized and UDim2.new(0,350,0,40) or UDim2.new(0,350,0,260)
+end)
+
+-- 第二段，继续放在同一个LocalScript里
+local function createSlider(y, labelText, min,max,defaultValue,callback)
+    local label = Instance.new("TextLabel", panel)
+    label.Size = UDim2.new(0,100,0,28)
+    label.Position = UDim2.new(0,15,0,y)
+    label.BackgroundTransparency = 1
+    label.Text = labelText
+    label.TextColor3 = Color3.fromRGB(200,200,200)
+    label.Font = Enum.Font.SourceSans
+    label.TextSize = 19
+
+    local sliderBG = Instance.new("Frame", panel)
+    sliderBG.Size = UDim2.new(0,140,0,10)
+    sliderBG.Position = UDim2.new(0,120,0,y+9)
+    sliderBG.BackgroundColor3 = Color3.fromRGB(100,100,120)
+    sliderBG.BorderSizePixel = 0
+
+    local sliderBtn = Instance.new("Frame", panel)
+    sliderBtn.Size = UDim2.new(0,12,0,24)
+    sliderBtn.Position = UDim2.new(0,120+((defaultValue-min)/(max-min))*140-6,0,y+2)
+    sliderBtn.BackgroundColor3 = Color3.fromRGB(220,220,220)
+    sliderBtn.BorderSizePixel = 0
+    sliderBtn.ZIndex = 2
+
+    local valueText = Instance.new("TextLabel",panel)
+    valueText.Size = UDim2.new(0,40,0,28)
+    valueText.Position = UDim2.new(0,265,0,y)
+    valueText.BackgroundTransparency = 1
+    valueText.Text = tostring(defaultValue)
+    valueText.TextColor3 = Color3.fromRGB(180,255,180)
+    valueText.Font = Enum.Font.SourceSans
+    valueText.TextSize = 18
+
+    local isActive = false
+
+    local setValue
+    setValue = function(val)
+        val = math.clamp(val, min, max)
+        sliderBtn.Position = UDim2.new(0,120+((val-min)/(max-min))*140-6,0,y+2)
+        valueText.Text = string.format("%.1f",val)
+        callback(val, isActive)
+    end
+
+    local dragging = false
+    sliderBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+        end
+    end)
+    sliderBtn.InputEnded:Connect(function(input)
+        dragging = false
+    end)
+    sliderBG.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            local x = input.Position.X
+            local rel = math.clamp((x-sliderBG.AbsolutePosition.X)/sliderBG.AbsoluteSize.X, 0, 1)
+            setValue( min + rel*(max-min) )
+        end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local x = input.Position.X
+            local rel = math.clamp((x-sliderBG.AbsolutePosition.X)/sliderBG.AbsoluteSize.X,0,1)
+            setValue( min + rel*(max-min) )
+        end
+    end)
+    sliderBtn.InputEnded:Connect(function(input)
+        dragging = false
+    end)
+
+    local switchBtn = Instance.new("TextButton", panel)
+    switchBtn.Size = UDim2.new(0,35,0,30)
+    switchBtn.Position = UDim2.new(0,310,0,y-3)
+    switchBtn.Text = "开"
+    switchBtn.BackgroundColor3 = Color3.fromRGB(80,200,80)
+    switchBtn.TextColor3 = Color3.fromRGB(10,40,10)
+    switchBtn.Font = Enum.Font.SourceSansBold
+    switchBtn.TextSize = 18
+
+    switchBtn.MouseButton1Click:Connect(function()
+        isActive = not isActive
+        switchBtn.Text = isActive and "关" or "开"
+        switchBtn.BackgroundColor3 = isActive and Color3.fromRGB(220,80,80) or Color3.fromRGB(80,200,80)
+        callback(tonumber(valueText.Text), isActive)
+    end)
+    callback(defaultValue, isActive)
+
+    return setValue
+end
+
+local speedSetter = createSlider(50, "速度", 8, 100, humanoid.WalkSpeed, function(val, state)
+    if state then
+        humanoid.WalkSpeed = val
+    else
+        humanoid.WalkSpeed = 16
+    end
+end)
+
+local jpSetter = createSlider(110, "跳跃力", 20, 200, humanoid.JumpPower, function(val, state)
+    if state then
+        humanoid.JumpPower = val
+    else
+        humanoid.JumpPower = 50
+    end
+end)
+
+local gravitySetter = createSlider(170, "重力", 40, 196, workspace.Gravity, function(val, state)
+    if state then
+        workspace.Gravity = val
+    else
+        workspace.Gravity = originalGravity
+    end
+end)
+
+player.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    humanoid = hum
+    speedSetter( humanoid.WalkSpeed )
+    jpSetter( humanoid.JumpPower )
+end)

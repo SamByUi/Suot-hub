@@ -1,0 +1,425 @@
+-- NEO高级UI全部源码 - 第一段（基础结构和主题定义）
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local mainUI = Instance.new("ScreenGui", playerGui)
+mainUI.Name = "NEOAdvancedUI"
+mainUI.ResetOnSpawn = false
+
+local theme = {
+    dark = {
+        bg = Color3.fromRGB(28,28,32),
+        bar = Color3.fromRGB(20,20,32),
+        btn = Color3.fromRGB(25,26,32),
+        font = Color3.fromRGB(130,200,255),
+        content = Color3.fromRGB(255,255,255)
+    },
+    light = {
+        bg = Color3.fromRGB(230,236,252),
+        bar = Color3.fromRGB(192,210,243),
+        btn = Color3.fromRGB(214,229,255),
+        font = Color3.fromRGB(30,60,110),
+        content = Color3.fromRGB(38,38,54)
+    }
+}
+local currentTheme = "dark"
+
+local mainFrame = Instance.new("Frame", mainUI)
+mainFrame.Size = UDim2.new(0, 670, 0, 410)
+mainFrame.Position = UDim2.new(0.5, -335, 0.5, -205)
+mainFrame.BackgroundColor3 = theme[currentTheme].bg
+mainFrame.BackgroundTransparency = 0.09
+mainFrame.BorderSizePixel = 0
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Active = true
+mainFrame.Draggable = true
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 18)
+
+local sidebar = Instance.new("Frame", mainFrame)
+sidebar.Size = UDim2.new(0, 120, 1, 0)
+sidebar.BackgroundTransparency = 0.15
+sidebar.BorderSizePixel = 0
+sidebar.BackgroundColor3 = theme[currentTheme].bar
+Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 16)
+
+local titleBar = Instance.new("Frame", mainFrame)
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = theme[currentTheme].bar
+titleBar.BackgroundTransparency = 0.05
+titleBar.BorderSizePixel = 0
+Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 10)
+
+local titleText = Instance.new("TextLabel", titleBar)
+titleText.Size = UDim2.new(1, 0, 1, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "NEO ALL Functions DEMO"
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 22
+titleText.TextColor3 = theme[currentTheme].font
+
+local closeBtn = Instance.new("TextButton", titleBar)
+closeBtn.Size = UDim2.new(0, 40, 1, 0)
+closeBtn.Position = UDim2.new(1, -45, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+closeBtn.BackgroundTransparency = 0.20
+closeBtn.Text = "×"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 24
+closeBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+closeBtn.MouseButton1Click:Connect(function() mainUI:Destroy() end)
+
+local UIListLayout = Instance.new("UIListLayout", sidebar)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 14)
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+local function createSidebarButton(text)
+    local btn = Instance.new("TextButton", sidebar)
+    btn.Size = UDim2.new(1, -24, 0, 38)
+    btn.BackgroundColor3 = theme[currentTheme].btn
+    btn.BackgroundTransparency = 0.08
+    btn.BorderSizePixel = 0
+    btn.Text = text
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 18
+    btn.TextColor3 = theme[currentTheme].font
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
+    return btn
+end
+
+local b_inject = createSidebarButton("脚本注入")
+local b_repo = createSidebarButton("脚本仓库")
+local b_tools = createSidebarButton("内置工具")
+local b_settings = createSidebarButton("UI设置")
+
+local contentFrame = Instance.new("Frame", mainFrame)
+contentFrame.Position = UDim2.new(0, 134, 0, 46)
+contentFrame.Size = UDim2.new(1, -146, 1, -58)
+contentFrame.BackgroundTransparency = 1
+
+local function applyTheme()
+    mainFrame.BackgroundColor3 = theme[currentTheme].bg
+    titleBar.BackgroundColor3 = theme[currentTheme].bar
+    for _,btn in pairs(sidebar:GetChildren()) do
+        if btn:IsA("TextButton") then
+            btn.BackgroundColor3 = theme[currentTheme].btn
+            btn.TextColor3 = theme[currentTheme].font
+        end
+    end
+    for _,label in pairs(contentFrame:GetDescendants()) do
+        if label:IsA("TextLabel") or label:IsA("TextBox") or label:IsA("TextButton") then
+            label.TextColor3 = theme[currentTheme].content
+            if label:IsA("TextButton") then
+                label.BackgroundColor3 = theme[currentTheme].btn
+            end
+        end
+    end
+end
+
+-- 第一段结束，请回复“下一段”继续
+
+-- NEO高级UI全部源码 - 第二段（功能区内容与主要控件）
+--（粘贴在第一段之后）
+
+local panel = {}
+
+-- 脚本注入区
+panel.inject = Instance.new("Frame", contentFrame)
+panel.inject.Size = UDim2.new(1,0,1,0)
+panel.inject.BackgroundTransparency = 1
+
+local instruct = Instance.new("TextLabel", panel.inject)
+instruct.Text = "输入代码并运行："
+instruct.Size = UDim2.new(1,0,0,30)
+instruct.Position = UDim2.new(0,0,0,0)
+instruct.BackgroundTransparency = 1
+instruct.Font = Enum.Font.Gotham
+instruct.TextSize = 18
+instruct.TextColor3 = theme[currentTheme].content
+
+local codeBox = Instance.new("TextBox", panel.inject)
+codeBox.Size = UDim2.new(1, -24, 0, 120)
+codeBox.Position = UDim2.new(0,12,0,32)
+codeBox.Text = "-- 输入Lua代码..."
+codeBox.ClearTextOnFocus = false
+codeBox.TextXAlignment = Enum.TextXAlignment.Left
+codeBox.TextYAlignment = Enum.TextYAlignment.Top
+codeBox.MultiLine = true
+codeBox.Font = Enum.Font.Code
+codeBox.TextSize = 17
+codeBox.TextColor3 = theme[currentTheme].content
+codeBox.BackgroundColor3 = Color3.fromRGB(21,25,34)
+Instance.new("UICorner", codeBox).CornerRadius = UDim.new(0, 8)
+
+local runBtn = Instance.new("TextButton", panel.inject)
+runBtn.Text = "运行"
+runBtn.Size = UDim2.new(0,80,0,36)
+runBtn.Position = UDim2.new(1,-92,0,164)
+runBtn.AnchorPoint = Vector2.new(0,0)
+runBtn.BackgroundColor3 = Color3.fromRGB(44,193,72)
+runBtn.TextColor3 = Color3.new(1,1,1)
+runBtn.Font = Enum.Font.GothamBold
+runBtn.TextSize = 19
+Instance.new("UICorner", runBtn).CornerRadius = UDim.new(0, 7)
+
+-- 脚本仓库区（可自定义添加更多）
+panel.repo = Instance.new("Frame", contentFrame)
+panel.repo.Size = UDim2.new(1,0,1,0)
+panel.repo.BackgroundTransparency = 1
+
+local repoTitle = Instance.new("TextLabel", panel.repo)
+repoTitle.Size = UDim2.new(1,0,0,32)
+repoTitle.Position = UDim2.new(0,0,0,0)
+repoTitle.BackgroundTransparency = 1
+repoTitle.Text = "脚本仓库（展示脚本点击注入）"
+repoTitle.Font = Enum.Font.GothamSemibold
+repoTitle.TextSize = 18
+repoTitle.TextColor3 = theme[currentTheme].content
+
+-- 示例仓库按钮1
+local repoBtn1 = Instance.new("TextButton", panel.repo)
+repoBtn1.Size = UDim2.new(1,-40,0,38)
+repoBtn1.Position = UDim2.new(0,20,0,50)
+repoBtn1.BackgroundColor3 = Color3.fromRGB(50,85,180)
+repoBtn1.Text = "点击注入演示脚本1（自动说HI）"
+repoBtn1.Font = Enum.Font.Gotham
+repoBtn1.TextSize = 17
+repoBtn1.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", repoBtn1).CornerRadius = UDim.new(0,10)
+
+-- 示例仓库按钮2
+local repoBtn2 = Instance.new("TextButton", panel.repo)
+repoBtn2.Size = UDim2.new(1,-40,0,38)
+repoBtn2.Position = UDim2.new(0,20,0,98)
+repoBtn2.BackgroundColor3 = Color3.fromRGB(170,90,50)
+repoBtn2.Text = "点击注入演示脚本2（全员跳跃）"
+repoBtn2.Font = Enum.Font.Gotham
+repoBtn2.TextSize = 17
+repoBtn2.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", repoBtn2).CornerRadius = UDim.new(0,10)
+
+-- 内置工具区
+panel.tools = Instance.new("Frame", contentFrame)
+panel.tools.Size = UDim2.new(1,0,1,0)
+panel.tools.BackgroundTransparency = 1
+
+local toolsTitle = Instance.new("TextLabel", panel.tools)
+toolsTitle.Size = UDim2.new(1,0,0,32)
+toolsTitle.Position = UDim2.new(0,0,0,0)
+toolsTitle.BackgroundTransparency = 1
+toolsTitle.Text = "内置工具演示："
+toolsTitle.Font = Enum.Font.GothamSemibold
+toolsTitle.TextSize = 18
+toolsTitle.TextColor3 = theme[currentTheme].content
+
+-- 飞行按钮
+local flyBtn = Instance.new("TextButton", panel.tools)
+flyBtn.Size = UDim2.new(0, 120, 0, 36)
+flyBtn.Position = UDim2.new(0, 26, 0, 44)
+flyBtn.BackgroundColor3 = Color3.fromRGB(73, 187, 241)
+flyBtn.TextColor3 = Color3.new(1, 1, 1)
+flyBtn.Text = "开启飞行"
+flyBtn.Font = Enum.Font.GothamBold
+flyBtn.TextSize = 17
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 9)
+
+-- 无敌按钮
+local godBtn = Instance.new("TextButton", panel.tools)
+godBtn.Size = UDim2.new(0, 120, 0, 36)
+godBtn.Position = UDim2.new(0, 170, 0, 44)
+godBtn.BackgroundColor3 = Color3.fromRGB(73,241,121)
+godBtn.TextColor3 = Color3.new(1,1,1)
+godBtn.Text = "无敌演示"
+godBtn.Font = Enum.Font.GothamBold
+godBtn.TextSize = 17
+Instance.new("UICorner", godBtn).CornerRadius = UDim.new(0, 9)
+
+-- UI设置区
+panel.settings = Instance.new("Frame", contentFrame)
+panel.settings.Size = UDim2.new(1,0,1,0)
+panel.settings.BackgroundTransparency = 1
+
+local themeBtn = Instance.new("TextButton", panel.settings)
+themeBtn.Size = UDim2.new(0, 160, 0, 38)
+themeBtn.Position = UDim2.new(0, 16, 0, 16)
+themeBtn.BackgroundColor3 = Color3.fromRGB(41, 125, 230)
+themeBtn.TextColor3 = Color3.new(1,1,1)
+themeBtn.Text = "切换主题（夜间/亮色）"
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.TextSize = 16
+Instance.new("UICorner", themeBtn).CornerRadius = UDim.new(0,12)
+
+local transBox = Instance.new("TextBox", panel.settings)
+transBox.Size = UDim2.new(0,90,0,38)
+transBox.Position = UDim2.new(0,190,0,16)
+transBox.BackgroundColor3 = Color3.fromRGB(210,225,255)
+transBox.Text = "透明：9%"
+transBox.Font = Enum.Font.Gotham
+transBox.TextColor3 = Color3.new(0,0,0)
+transBox.TextSize = 16
+Instance.new("UICorner", transBox).CornerRadius = UDim.new(0,12)
+
+-- 第二段完毕，请回复“下一段”继续
+
+-- NEO高级UI全部源码 - 第三段（功能实现与事件绑定）
+--（粘贴在上一段之后）
+
+-- 侧边栏面板切换逻辑
+for name, frame in pairs(panel) do
+    frame.Visible = false
+end
+panel.inject.Visible = true -- 默认
+
+local btnMap = {
+    [b_inject] = panel.inject,
+    [b_repo] = panel.repo,
+    [b_tools] = panel.tools,
+    [b_settings] = panel.settings
+}
+for btn, frame in pairs(btnMap) do
+    btn.MouseButton1Click:Connect(function()
+        for _,f in pairs(panel) do f.Visible = false end
+        frame.Visible = true
+        applyTheme()
+    end)
+end
+
+-- 主题切换逻辑
+themeBtn.MouseButton1Click:Connect(function()
+    currentTheme = (currentTheme=="dark" and "light") or "dark"
+    applyTheme()
+end)
+
+-- 透明度调整框
+transBox.FocusLost:Connect(function()
+    local t = tonumber(transBox.Text:match("%d+"))
+    if t and t>=0 and t<=90 then
+        mainFrame.BackgroundTransparency = t/100
+        transBox.Text = "透明："..t.."%"
+    end
+end)
+
+-- 脚本注入按钮逻辑
+runBtn.MouseButton1Click:Connect(function()
+    local str = codeBox.Text
+    if str and #str > 0 then
+        local f = loadstring(str)
+        if f then
+            local ok, msg = pcall(f)
+            if not ok then
+                codeBox.Text = "-- 错误: "..tostring(msg)
+            end
+        else
+            codeBox.Text = "-- 无效的代码"
+        end
+    end
+end)
+
+-- 仓库注入脚本1演示：让自己角色自动Say "HI"
+repoBtn1.MouseButton1Click:Connect(function()
+    local char = player.Character or player.CharacterAdded:Wait()
+    if char:FindFirstChildOfClass("Humanoid") then
+        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents")
+        :WaitForChild("SayMessageRequest"):FireServer("HI!（来自仓库脚本1）", "All")
+    end
+end)
+
+-- 仓库注入脚本2演示：让所有玩家跳一下
+repoBtn2.MouseButton1Click:Connect(function()
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+            plr.Character.Humanoid.Jump = true
+        end
+    end
+end)
+
+-- 内置工具：飞行和无敌
+local flyState, bpObj
+flyBtn.MouseButton1Click:Connect(function()
+    local him = player.Character or player.CharacterAdded:Wait()
+    if not him:FindFirstChild("HumanoidRootPart") then return end
+    if flyState then
+        flyBtn.Text = "开启飞行"
+        if bpObj then bpObj:Destroy() bpObj = nil end
+    else
+        flyBtn.Text = "关闭飞行"
+        bpObj = Instance.new("BodyPosition")
+        bpObj.Parent = him.HumanoidRootPart
+        bpObj.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bpObj.Position = him.HumanoidRootPart.Position + Vector3.new(0,18,0)
+        spawn(function()
+            wait(1.3)
+            if bpObj then bpObj:Destroy() bpObj = nil end flyBtn.Text = "开启飞行" flyState=false end
+        end)
+    end
+    flyState = not flyState
+end)
+
+godBtn.MouseButton1Click:Connect(function()
+    local him = player.Character or player.CharacterAdded:Wait()
+    if him:FindFirstChildOfClass("Humanoid") then
+        him.Humanoid.Health = 100000
+        him.Humanoid.MaxHealth = 100000
+    end
+end)
+
+-- 第三段结束，请回复“最后一段”！
+
+-- NEO高级UI全部源码 - 第四段（杂项收尾与初始化优化）
+--（粘贴在前面内容最后）
+
+-- 面板激活/隐藏（按Insert或自定义键）
+local userInput = game:GetService("UserInputService")
+local shown = true
+userInput.InputBegan:Connect(function(input,gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.Insert then
+        shown = not shown
+        mainUI.Enabled = shown
+    end
+end)
+
+-- 拖动优化
+local dragToggle = false
+local dragInput, dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
+            end
+        end)
+    end
+end)
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+userInput.InputChanged:Connect(function(input)
+    if input == dragInput and dragToggle then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- 默认界面刷新主题
+applyTheme()
+
+-- 确保仅显示第一个页面
+for k,frame in pairs(panel) do
+    if k ~= "inject" then
+        frame.Visible = false
+    end
+end
+
+-- 游戏再次重进保留UI（ResetOnSpawn=false）
+
+-- 全部代码结束！

@@ -1,0 +1,193 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- 存放所有marker，便于全部开关
+local markers = {}
+
+-- 创建标记
+local function createMarker(targetPlayer)
+    if targetPlayer == player then return end
+    if markers[targetPlayer] then return end -- 已有就不再创建
+
+    local marker = Instance.new("BillboardGui")
+    marker.Name = "PlayerMarker"
+    marker.Size = UDim2.new(0, 100, 0, 40)
+    marker.AlwaysOnTop = true
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1, 0, 0)
+    label.TextStrokeTransparency = 0
+    label.TextScaled = true
+    label.Text = targetPlayer.Name
+    label.Parent = marker
+
+    marker.Parent = game:GetService("CoreGui")
+
+    markers[targetPlayer] = marker
+
+    local function updateMarker()
+        if marker.Enabled and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") 
+            and player.Character and player.Character:FindFirstChild("Head") then
+            marker.Adornee = targetPlayer.Character.Head
+            local dist = (targetPlayer.Character.Head.Position - player.Character.Head.Position).Magnitude
+            label.Text = string.format("%s\n%.1f studs", targetPlayer.Name, dist)
+        else
+            marker.Adornee = nil
+            label.Text = targetPlayer.Name
+        end
+    end
+
+    marker.UpdateMarker = updateMarker
+
+    local leftConn
+    leftConn = targetPlayer.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            if marker then marker:Destroy() end
+            markers[targetPlayer] = nil
+            if leftConn then leftConn:Disconnect() end
+        end
+    end)
+end
+
+for _, plr in ipairs(Players:GetPlayers()) do
+    createMarker(plr)
+end
+Players.PlayerAdded:Connect(createMarker)
+-- 创建主界面
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PlayerESP_UI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- 主面板
+local dragFrame = Instance.new("Frame")
+dragFrame.Size = UDim2.new(0, 250, 0, 70)
+dragFrame.Position = UDim2.new(0.3, 0, 0.1, 0)
+dragFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+dragFrame.BackgroundTransparency = 0.1
+dragFrame.Active = true
+dragFrame.Draggable = true
+dragFrame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 25)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.new(1,1,1)
+title.Text = "玩家位置追踪器"
+title.Font = Enum.Font.SourceSansSemibold
+title.TextSize = 22
+title.Parent = dragFrame
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 110, 0, 30)
+toggleBtn.Position = UDim2.new(0, 10, 0, 35)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 140, 60)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Font = Enum.Font.SourceSans
+toggleBtn.TextSize = 18
+toggleBtn.Text = "关闭标记"
+toggleBtn.Parent = dragFrame
+
+local shrinkBtn = Instance.new("TextButton")
+shrinkBtn.Size = UDim2.new(0, 85, 0, 30)
+shrinkBtn.Position = UDim2.new(1, -95, 0, 35)
+shrinkBtn.BackgroundColor3 = Color3.fromRGB(120,120,120)
+shrinkBtn.TextColor3 = Color3.new(1,1,1)
+shrinkBtn.Font = Enum.Font.SourceSans
+shrinkBtn.TextSize = 18
+shrinkBtn.Text = "收缩"
+shrinkBtn.Parent = dragFrame
+
+-- 悬浮窗
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0, 48, 0, 48)
+floatBtn.Position = UDim2.new(0.3, 0, 0.1, 0)
+floatBtn.BackgroundColor3 = Color3.fromRGB(60,80,180)
+floatBtn.Text = "追踪"
+floatBtn.TextSize = 16
+floatBtn.TextColor3 = Color3.new(1,1,1)
+floatBtn.Visible = false
+floatBtn.Active = true
+floatBtn.Draggable = true
+floatBtn.Parent = screenGui
+
+-- 标记显示状态
+local markerEnabled = true
+
+local function setMarkersEnabled(state)
+    for _, marker in pairs(markers) do
+        marker.Enabled = state
+    end
+end
+
+-- 主按钮切换标记显示
+toggleBtn.MouseButton1Click:Connect(function()
+    markerEnabled = not markerEnabled
+    setMarkersEnabled(markerEnabled)
+    toggleBtn.Text = markerEnabled and "关闭标记" or "开启标记"
+    toggleBtn.BackgroundColor3 = markerEnabled and Color3.fromRGB(60, 140, 60) or Color3.fromRGB(180,60,60)
+end)
+
+-- 收缩为悬浮窗
+shrinkBtn.MouseButton1Click:Connect(function()
+    dragFrame.Visible = false
+    floatBtn.Visible = true
+    floatBtn.Position = dragFrame.Position
+end)
+-- 点悬浮窗恢复
+floatBtn.MouseButton1Click:Connect(function()
+    dragFrame.Visible = true
+    floatBtn.Visible = false
+    dragFrame.Position = floatBtn.Position
+end)
+
+-- 自适应移动端和PC端都可拖动
+local dragging, dragInput, dragStart, startPos
+local UIS = game:GetService("UserInputService")
+
+local function makeDraggable(gui)
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    gui.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            gui.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+makeDraggable(dragFrame)
+makeDraggable(floatBtn)
+
+-- 标记每帧刷新
+RunService.RenderStepped:Connect(function()
+    for target, marker in pairs(markers) do
+        if marker.UpdateMarker then
+            marker.UpdateMarker()
+        end
+    end
+end)
+
+-- 新玩家离开清除
+Players.PlayerRemoving:Connect(function(plr)
+    if markers[plr] then
+        markers[plr]:Destroy()
+        markers[plr] = nil
+    end
+end)
